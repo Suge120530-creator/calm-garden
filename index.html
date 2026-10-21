@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; media-src data:">
+<title>Bunny's Calm Garden</title>
+<style>
+:root{--sage:#5B7B64;--sage-l:#EEF2EC;--cream:#F6F0E8;--ink:#4A3F38;--muted:#7a6d63;--terra:#C9785D;--sun:#E9B95B;--card:#fff}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--cream);color:var(--ink);font-family:ui-rounded,"SF Pro Rounded","Nunito","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#app{height:100%;display:flex;flex-direction:column;max-width:760px;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 16px max(12px,env(safe-area-inset-bottom))}
+.screen{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;min-height:0}
+.screen.on{display:flex}
+h1{font-size:clamp(28px,7vw,44px);line-height:1.1;color:var(--sage)}
+h2{font-size:clamp(22px,5.5vw,32px);line-height:1.2}
+p{font-size:clamp(16px,4vw,20px);line-height:1.4}
+.small{font-size:14px;color:var(--muted)}
+button{font:inherit;border:0;cursor:pointer;color:inherit}
+.big{background:var(--sage);color:#fff;font-size:clamp(22px,6vw,30px);font-weight:700;padding:16px 44px;border-radius:999px;box-shadow:0 5px 0 #46604d;min-height:64px}
+.big:active{transform:translateY(3px);box-shadow:0 2px 0 #46604d}
+.ghost{background:transparent;color:var(--sage);font-weight:700;font-size:16px;padding:10px 16px;border-radius:12px;min-height:44px}
+.top{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:48px}
+.icon{width:48px;height:48px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 0 #e3d8cc}
+.dots{display:flex;gap:8px}
+.dot{width:14px;height:14px;border-radius:50%;background:#e3d8cc}
+.dot.done{background:var(--sage)}
+.bunny{width:min(52vw,230px);height:auto}
+.scene{background:var(--card);border-radius:20px;padding:12px 18px;max-width:520px;box-shadow:0 3px 0 #e3d8cc}
+.choices{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;width:100%}
+.choice{background:var(--card);border-radius:20px;padding:10px 8px 8px;width:min(28vw,150px);display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 0 #e3d8cc;min-height:44px}
+.choice svg{width:100%;height:auto;max-width:110px}
+.choice span{font-weight:700;font-size:clamp(15px,4vw,19px)}
+.choice:active{transform:translateY(2px)}
+.choice.picked{outline:4px solid var(--sage)}
+.choice.answer{outline:4px solid var(--sun)}
+.choice[disabled]{cursor:default}
+.breathe-wrap{position:relative;width:min(60vw,260px);height:min(60vw,260px);display:flex;align-items:center;justify-content:center}
+.balloon{width:40%;height:40%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e9a58f,var(--terra));transition:transform 4s ease-in-out;transform:scale(1)}
+.balloon.in{transform:scale(2.2)}
+.cue{font-size:clamp(24px,6.5vw,34px);font-weight:800;color:var(--sage);min-height:1.3em}
+.garden{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.garden span{animation:pop .5s ease-out backwards}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.hold{position:relative;overflow:hidden}
+.hold i{position:absolute;left:0;bottom:0;height:4px;width:0;background:var(--sage);transition:width 0s}
+.hold.going i{width:100%;transition:width 2s linear}
+#parent{justify-content:flex-start;text-align:left;overflow:auto;align-items:stretch}
+#parent .card{background:var(--card);border-radius:16px;padding:16px 18px;box-shadow:0 2px 0 #e3d8cc}
+#parent h3{color:var(--sage);font-size:18px;margin-bottom:6px}
+#parent li{margin:0 0 6px 20px;font-size:16px;line-height:1.4}
+#parent p{font-size:16px}
+.toggle{display:flex;align-items:center;gap:10px;font-size:16px;background:var(--card);padding:8px 14px;border-radius:999px;min-height:44px}
+@media (prefers-reduced-motion:reduce){.balloon{transition-duration:.01s}.garden span{animation:none}}
+@media (max-height:560px){.screen{gap:6px;overflow:auto}.bunny{width:min(30vh,150px)}#bunnyRound{display:none}.choice{width:min(22vw,120px)}.choice svg{max-width:56px}.big{padding:8px 30px;min-height:48px;font-size:20px}.scene{padding:6px 14px}.breathe-wrap{width:40vh;height:40vh}#feedback{min-height:0!important}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<section class="screen on" id="start">
+  <svg class="bunny" id="bunnyStart" viewBox="0 0 200 220" aria-hidden="true"></svg>
+  <h1>Bunny's Calm Garden</h1>
+  <p>Help Bunny name big feelings,<br>then calm down together.</p>
+  <button class="big" id="play">Play</button>
+  <label class="toggle" id="voiceRow"><input type="checkbox" id="voice" checked> Read aloud</label>
+  <button class="ghost hold" id="parentBtn" aria-label="Grown-ups: press and hold to open">Grown-ups: press and hold<i></i></button>
+</section>
+
+<section class="screen" id="round">
+  <div class="top">
+    <button class="icon" id="home" aria-label="Home">⌂</button>
+    <div class="dots" id="dots"></div>
+    <button class="icon" id="say" aria-label="Read again">🔊</button>
+  </div>
+  <svg class="bunny" id="bunnyRound" viewBox="0 0 200 220" aria-hidden="true"></svg>
+  <div class="scene"><p id="sceneText"></p></div>
+  <p id="ask"><b>How might Bunny feel?</b></p>
+  <div class="choices" id="choices"></div>
+  <p id="feedback" aria-live="polite" style="min-height:2.8em"></p>
+  <button class="big" id="next" style="display:none">Next</button>
+</section>
+
+<section class="screen" id="breathe">
+  <h2 id="breatheTitle"></h2>
+  <div class="breathe-wrap"><div class="balloon" id="balloon"></div></div>
+  <div class="cue" id="cue" aria-live="polite"></div>
+  <p id="breatheCount" class="small"></p>
+  <button class="big" id="breatheDone" style="display:none">Bunny feels calmer</button>
+  <button class="ghost" id="skip">Skip</button>
+</section>
+
+<section class="screen" id="end">
+  <svg class="bunny" id="bunnyEnd" viewBox="0 0 200 220" aria-hidden="true"></svg>
+  <h1>Your garden grew!</h1>
+  <div class="garden" id="garden"></div>
+  <p id="endText"></p>
+  <button class="big" id="again">Play again</button>
+  <button class="ghost" id="toStart">Home</button>
+</section>
+
+<section class="screen" id="parent">
+  <div class="top"><b style="color:var(--sage);font-size:18px">For grown-ups</b><button class="icon" id="closeParent" aria-label="Close">✕</button></div>
+  <div class="card"><h3>How to play</h3>
+    <ul><li>Sit together and play in a calm moment, not during an upset. 5 to 10 minutes is plenty.</li>
+    <li>Your child picks how Bunny might feel. Every pick gets a kind answer, because more than one feeling can fit.</li>
+    <li>After a big feeling, breathe along with the balloon. Breathe slowly yourself, and let your child join when they're ready.</li>
+    <li>Ages 3 to 4: read the words aloud and point to the faces. Ages 5 to 6: ask "Has that ever happened to you? How did you feel?"</li></ul></div>
+  <div class="card"><h3>Privacy</h3>
+    <p>This game collects nothing. No accounts, no ads, no tracking, no links out, and it sends nothing over the internet. "Read aloud" uses only voices already on your device; if your device has none, the button hides and you can read the words yourself.</p></div>
+  <div class="card"><h3>Good to know</h3>
+    <p>Activities adapted from <i>Big Feelings, Little Hearts</i> by Softly Raised. Created with the help of AI and checked by a person. Educational only, not therapy or medical advice. If your child's big feelings are intense, frequent or getting in the way of daily life, talk with your pediatrician.</p>
+    <p class="small" style="margin-top:8px">© 2026 Softly Raised · Personal use only · v1.0</p></div>
+</section>
+
+</div>
+<script>
+(function(){
+"use strict";
+// Feelings, faces and colors. Words match the Big Feelings faces chart.
+var F={
+  happy:{label:"Happy",brow:0,mouth:"smile",color:"#E9B95B"},
+  excited:{label:"Excited",brow:-1,mouth:"open",color:"#F0C94F",eyes:"wide"},
+  proud:{label:"Proud",brow:0,mouth:"open",color:"#E8A86B",eyes:"happy"},
+  calm:{label:"Calm",brow:0,mouth:"soft",color:"#9DB8A4",eyes:"closed"},
+  sad:{label:"Sad",brow:1,mouth:"frown",color:"#8FA9C4",tear:true},
+  worried:{label:"Worried",brow:1,mouth:"wavy",color:"#B9A6C9"},
+  scared:{label:"Scared",brow:1,mouth:"o",color:"#B9A6C9",eyes:"wide"},
+  frustrated:{label:"Frustrated",brow:2,mouth:"flat",color:"#D9967E"},
+  angry:{label:"Angry",brow:2,mouth:"frown",color:"#C9785D"}
+};
+var BIG={sad:1,worried:1,scared:1,frustrated:1,angry:1};
+// Situations from the guide's trigger list (p.9) plus everyday happy moments.
+var SCENES=[
+  {t:"Bunny built a tall tower. Then it fell down.",f:"frustrated",o:["frustrated","happy","calm"]},
+  {t:"Someone took Bunny's favorite toy.",f:"angry",o:["angry","proud","excited"]},
+  {t:"A very loud noise went BOOM!",f:"scared",o:["scared","happy","proud"]},
+  {t:"It's time to stop playing and go home.",f:"sad",o:["sad","excited","proud"]},
+  {t:"Tomorrow is Bunny's first day at a new school.",f:"worried",o:["worried","angry","calm"]},
+  {t:"Bunny drew a picture with no help at all!",f:"proud",o:["proud","sad","scared"]},
+  {t:"Grandma is coming to visit today!",f:"excited",o:["excited","sad","angry"]},
+  {t:"Bunny is snuggled in a soft blanket with a book.",f:"calm",o:["calm","angry","worried"]},
+  {t:"Bunny's friend shared a yummy snack.",f:"happy",o:["happy","scared","frustrated"]}
+];
+// Breathing games from the guide (p.11), shortened for ages 3-6.
+var BREATHS=[
+  {name:"Balloon breath",inn:"Breathe in… the balloon grows",out:"Breathe out… the balloon shrinks",n:3},
+  {name:"Hot chocolate breath",inn:"Smell the hot chocolate…",out:"Blow to cool it down…",n:3},
+  {name:"Bunny breath",inn:"Sniff, sniff, sniff!",out:"One long, slow breath out…",n:3}
+];
+var ROUNDS=6, FLOWERS=["#E79A8C","#E9B95B","#B9A6C9","#8FA9C4","#C9785D","#9DB8A4"];
+
+function $(id){return document.getElementById(id)}
+function show(id){var s=document.querySelectorAll(".screen");for(var i=0;i<s.length;i++)s[i].classList.toggle("on",s[i].id===id);state.screen=id}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+
+// ---------- drawing ----------
+function face(k,cx,cy,r){
+  var f=F[k],s="";
+  var ey=cy-r*0.12,ex=r*0.35,er=r*0.1;
+  if(f.eyes==="closed"){s+=arc(cx-ex,ey,er,false)+arc(cx+ex,ey,er,false)}
+  else if(f.eyes==="happy"){s+=hap(cx-ex,ey,er)+hap(cx+ex,ey,er)}
+  else{var rr=f.eyes==="wide"?er*1.4:er;s+=circ(cx-ex,ey,rr,"#4A3F38")+circ(cx+ex,ey,rr,"#4A3F38")}
+  var by=ey-r*0.28,bw=r*0.22;
+  if(f.brow===1){s+=line(cx-ex-bw,by,cx-ex+bw,by-r*0.1)+line(cx+ex+bw,by,cx+ex-bw,by-r*0.1)}
+  else if(f.brow===2){s+=line(cx-ex-bw,by-r*0.1,cx-ex+bw,by+r*0.05)+line(cx+ex+bw,by-r*0.1,cx+ex-bw,by+r*0.05)}
+  else if(f.brow===-1){s+=line(cx-ex-bw,by,cx-ex+bw,by-r*0.06)+line(cx+ex+bw,by,cx+ex-bw,by-r*0.06)}
+  var my=cy+r*0.35,mw=r*0.38;
+  var m={
+    smile:'<path d="M'+(cx-mw)+' '+my+' Q'+cx+' '+(my+r*0.35)+' '+(cx+mw)+' '+my+'" class="st"/>',
+    grin:'<path d="M'+(cx-mw)+' '+(my-r*0.05)+' Q'+cx+' '+(my+r*0.3)+' '+(cx+mw)+' '+(my-r*0.05)+'" class="st"/>',
+    open:'<path d="M'+(cx-mw)+' '+my+' Q'+cx+' '+(my+r*0.5)+' '+(cx+mw)+' '+my+' Z" fill="#4A3F38"/>',
+    soft:'<path d="M'+(cx-mw*0.6)+' '+my+' Q'+cx+' '+(my+r*0.15)+' '+(cx+mw*0.6)+' '+my+'" class="st"/>',
+    frown:'<path d="M'+(cx-mw)+' '+(my+r*0.18)+' Q'+cx+' '+(my-r*0.15)+' '+(cx+mw)+' '+(my+r*0.18)+'" class="st"/>',
+    wavy:'<path d="M'+(cx-mw)+' '+(my+r*0.05)+' q'+(mw/2)+' '+(-r*0.12)+' '+mw+' 0 t'+mw+' 0" class="st"/>',
+    o:'<ellipse cx="'+cx+'" cy="'+(my+r*0.05)+'" rx="'+(r*0.14)+'" ry="'+(r*0.18)+'" fill="#4A3F38"/>',
+    flat:'<path d="M'+(cx-mw)+' '+(my+r*0.05)+' L'+(cx+mw)+' '+(my+r*0.05)+'" class="st"/>'
+  }[f.mouth];
+  s+=m;
+  if(f.tear)s+='<path d="M'+(cx+ex)+' '+(ey+r*0.15)+' q'+(-r*0.08)+' '+(r*0.18)+' 0 '+(r*0.22)+' q'+(r*0.08)+' '+(-r*0.04)+' 0 '+(-r*0.22)+'" fill="#8FC1E0"/>';
+  return s;
+}
+function flower(c){var p="";for(var a=0;a<5;a++){var t=a*2*Math.PI/5;p+=circ(30+13*Math.sin(t),26-13*Math.cos(t),10,c)}return '<svg viewBox="0 0 60 90" width="44" height="66" aria-hidden="true"><path d="M30 40 V88" stroke="#5B7B64" stroke-width="5"/><ellipse cx="40" cy="66" rx="10" ry="5" fill="#5B7B64"/>'+p+circ(30,26,7,"#F6E3A8")+'</svg>'}
+function circ(x,y,r,c){return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+c+'"/>'}
+function line(a,b,c,d){return '<path d="M'+a+' '+b+' L'+c+' '+d+'" class="st"/>'}
+function hap(x,y,r){return '<path d="M'+(x-r*1.3)+' '+(y+r*0.5)+' Q'+x+' '+(y-r*1.6)+' '+(x+r*1.3)+' '+(y+r*0.5)+'" class="st"/>'}
+function arc(x,y,r){return '<path d="M'+(x-r*1.3)+' '+y+' Q'+x+' '+(y+r*1.4)+' '+(x+r*1.3)+' '+y+'" class="st"/>'}
+var ST='<style>.st{stroke:#4A3F38;stroke-width:5;stroke-linecap:round;fill:none}</style>';
+function faceSvg(k){return '<svg viewBox="0 0 120 120" aria-hidden="true">'+ST+circ(60,60,54,F[k].color)+face(k,60,62,54)+'</svg>'}
+function drawBunny(el,k){
+  var f=F[k||"happy"];
+  el.innerHTML=ST+
+   '<ellipse cx="72" cy="52" rx="20" ry="50" fill="#fff" stroke="#e3d8cc" stroke-width="3"/><ellipse cx="72" cy="56" rx="9" ry="36" fill="#F2C9C0"/>'+
+   '<ellipse cx="128" cy="52" rx="20" ry="50" fill="#fff" stroke="#e3d8cc" stroke-width="3"/><ellipse cx="128" cy="56" rx="9" ry="36" fill="#F2C9C0"/>'+
+   '<circle cx="100" cy="140" r="70" fill="#fff" stroke="#e3d8cc" stroke-width="3"/>'+
+   '<circle cx="62" cy="158" r="11" fill="'+f.color+'" opacity=".45"/><circle cx="138" cy="158" r="11" fill="'+f.color+'" opacity=".45"/>'+
+   face(k||"happy",100,142,70)+
+   '<ellipse cx="100" cy="146" rx="6" ry="4.5" fill="#E79A8C"/>';
+}
+
+// ---------- speech (on-device voices only) ----------
+var voice=null, speechOK=false;
+function pickVoice(){
+  if(!("speechSynthesis" in window))return;
+  var vs=speechSynthesis.getVoices().filter(function(v){return v.localService&&/^en/i.test(v.lang)});
+  voice=vs.filter(function(v){return /en-US/i.test(v.lang)})[0]||vs[0]||null;
+  speechOK=!!voice;
+  $("voiceRow").style.display=speechOK?"":"none";
+}
+function say(t){
+  if(!speechOK||!$("voice").checked)return;
+  try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.voice=voice;u.rate=0.9;u.pitch=1.1;speechSynthesis.speak(u)}catch(e){}
+}
+function hush(){try{if("speechSynthesis" in window)speechSynthesis.cancel()}catch(e){}}
+
+// ---------- sound effects (placeholders) ----------
+// Sound effects are off on purpose: the game ships with no audio files.
+// To add one later, put a short sound inside this file as a data: URL and play it here.
+function playSound(name){ /* "pick", "calm", "garden" */ }
+
+// ---------- game state ----------
+// screen = which screen is showing, order = this game's 6 situations, i = current round
+var state={screen:"start",order:[],i:0,picked:false,timers:[]};
+function clearTimers(){state.timers.forEach(clearTimeout);state.timers=[]}
+function later(fn,ms){state.timers.push(setTimeout(fn,ms))}
+
+function newGame(){
+  clearTimers();hush();
+  state.order=shuffle(SCENES).slice(0,ROUNDS);
+  // guarantee at least 2 big feelings so the calm step is always seen
+  var bigs=state.order.filter(function(s){return BIG[s.f]}).length;
+  if(bigs<2){var extra=shuffle(SCENES.filter(function(s){return BIG[s.f]&&state.order.indexOf(s)<0}));
+    for(var j=0;j<state.order.length&&bigs<2;j++){if(!BIG[state.order[j].f]){state.order[j]=extra.pop();bigs++}}}
+  state.i=0;renderRound();show("round");
+}
+function renderDots(){
+  var h="";for(var j=0;j<ROUNDS;j++)h+='<span class="dot'+(j<state.i?" done":"")+'"></span>';$("dots").innerHTML=h;
+}
+function renderRound(){
+  var s=state.order[state.i];state.picked=false;
+  renderDots();drawBunny($("bunnyRound"),"calm");
+  $("sceneText").textContent=s.t;$("feedback").textContent="";$("next").style.display="none";$("ask").style.display="";
+  var c=$("choices");c.innerHTML="";
+  shuffle(s.o).forEach(function(k){
+    var b=document.createElement("button");b.className="choice";b.dataset.k=k;
+    b.innerHTML=faceSvg(k)+"<span>"+F[k].label+"</span>";b.setAttribute("aria-label",F[k].label);
+    b.addEventListener("click",function(){pick(k,b)});c.appendChild(b);
+  });
+  later(function(){say(s.t+" How might Bunny feel?")},250);
+}
+function pick(k,btn){
+  if(state.picked)return;state.picked=true;
+  var s=state.order[state.i],msg;
+  var bs=$("choices").querySelectorAll(".choice");
+  for(var j=0;j<bs.length;j++){bs[j].disabled=true;if(bs[j].dataset.k===s.f)bs[j].classList.add("answer")}
+  btn.classList.add("picked");playSound("pick");
+  drawBunny($("bunnyRound"),s.f);
+  if(k===s.f)msg="Yes! Bunny feels "+F[s.f].label.toLowerCase()+".";
+  else msg="You picked "+F[k].label.toLowerCase()+". Feelings can be different for everyone. Bunny felt "+F[s.f].label.toLowerCase()+".";
+  $("feedback").textContent=msg;$("ask").style.display="none";
+  say(msg+(BIG[s.f]?" That's a big feeling. Let's help Bunny calm down.":""));
+  $("next").textContent=BIG[s.f]?"Help Bunny calm down":"Next";
+  $("next").style.display="";
+}
+function next(){
+  hush();var s=state.order[state.i];
+  if(BIG[s.f]&&state.screen==="round"){startBreath();return}
+  state.i++;
+  if(state.i>=ROUNDS){endGame();return}
+  renderRound();show("round");
+}
+function startBreath(){
+  clearTimers();
+  var b=BREATHS[Math.floor(Math.random()*BREATHS.length)];
+  show("breathe");$("breatheTitle").textContent=b.name;$("breatheDone").style.display="none";$("skip").style.display="";
+  var bal=$("balloon"),n=0;bal.classList.remove("in");$("cue").textContent="Get ready…";$("breatheCount").textContent="";
+  say("Let's do "+b.name+" together.");
+  function cycle(){
+    if(n>=b.n){$("cue").textContent="Nice and slow. Well done!";$("breatheCount").textContent="";$("breatheDone").style.display="";$("skip").style.display="none";say("Well done! Bunny feels calmer.");return}
+    n++;$("breatheCount").textContent="Breath "+n+" of "+b.n;
+    $("cue").textContent=b.inn;bal.classList.add("in");say(b.inn.replace(/…/g,""));
+    later(function(){$("cue").textContent=b.out;bal.classList.remove("in");say(b.out.replace(/…/g,""));later(cycle,4500)},4500);
+  }
+  later(cycle,2200);
+}
+function afterBreath(){playSound("calm");clearTimers();hush();state.i++;if(state.i>=ROUNDS){endGame();return}renderRound();show("round")}
+function endGame(){
+  clearTimers();playSound("garden");show("end");drawBunny($("bunnyEnd"),"proud");
+  var g=$("garden");g.innerHTML="";
+  for(var j=0;j<ROUNDS;j++){var sp=document.createElement("span");sp.innerHTML=flower(FLOWERS[j]);sp.style.animationDelay=(j*0.15)+"s";g.appendChild(sp)}
+  var t="You helped Bunny with "+ROUNDS+" feelings. Every feeling is okay!";
+  $("endText").textContent=t;say("Your garden grew! "+t);
+}
+function home(){clearTimers();hush();drawBunny($("bunnyStart"),"happy");show("start")}
+
+// grown-up gate: press and hold 2 seconds
+(function(){
+  var b=$("parentBtn"),tm=null;
+  function down(e){e.preventDefault();b.classList.add("going");tm=setTimeout(function(){b.classList.remove("going");hush();show("parent")},2000)}
+  function up(){clearTimeout(tm);b.classList.remove("going")}
+  b.addEventListener("pointerdown",down);["pointerup","pointerleave","pointercancel"].forEach(function(ev){b.addEventListener(ev,up)});
+  b.addEventListener("contextmenu",function(e){e.preventDefault()});
+  b.addEventListener("keydown",function(e){if((e.key==="Enter"||e.key===" ")&&!e.repeat)down(e)});
+  b.addEventListener("keyup",up);
+})();
+
+$("play").addEventListener("click",newGame);
+$("next").addEventListener("click",next);
+$("breatheDone").addEventListener("click",afterBreath);
+$("skip").addEventListener("click",afterBreath);
+$("again").addEventListener("click",newGame);
+$("toStart").addEventListener("click",home);
+$("home").addEventListener("click",home);
+$("closeParent").addEventListener("click",home);
+$("say").addEventListener("click",function(){var s=state.order[state.i];say(state.picked?$("feedback").textContent:s.t+" How might Bunny feel?")});
+document.addEventListener("visibilitychange",function(){if(document.hidden)hush()});
+
+pickVoice();if("speechSynthesis" in window&&"onvoiceschanged" in speechSynthesis)speechSynthesis.onvoiceschanged=pickVoice;
+drawBunny($("bunnyStart"),"happy");
+window.__game={state:state,SCENES:SCENES,F:F,faceSvg:faceSvg};
+})();
+</script>
+</body>
+</html>
